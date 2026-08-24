@@ -1,0 +1,54 @@
+{
+    "author": "MaxDViper",
+    "dependencies": {},
+    "keywords": [],
+    "name": "where-in-utah",
+    "pebble": {
+        "capabilities": [
+            "location"
+        ],
+        "displayName": "Where In Utah",
+        "enableMultiJS": false,
+        "messageKeys": {
+            "dummy_time_key": 0,
+            "lat_key": 1,
+            "lon_key": 2
+        },
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/menu_icon.png",
+                    "menuIcon": true,
+                    "name": "IMAGE_MENU_ICON",
+                    "type": "png"
+                },
+                {
+                    "file": "images/world.png",
+                    "name": "WORLD",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "diorite",
+                        "emery",
+                        "flint"
+                    ],
+                    "type": "png"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "diorite",
+            "emery",
+            "flint"
+        ],
+        "uuid": "9bc086ab-c298-4dec-bf7d-3bc55131e0fc",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "2.0.0"
+}
