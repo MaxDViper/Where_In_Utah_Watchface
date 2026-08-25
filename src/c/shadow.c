@@ -116,12 +116,18 @@ static void draw_earth() {
           ((char *)gbitmap_get_data(image))[byte] &= ~(0x1 << (7 - x % 8));
         }
 #else
-        int byte = y * gbitmap_get_bytes_per_row(world_bitmap) + (int)(x / 2);
-        if (all_night) { 
-          ((char *)gbitmap_get_data(world_bitmap))[byte] = ((char *)gbitmap_get_data(world_bitmap))[(int)(WIDTH*HEIGHT / 2) + byte];
-        } else { 
-          ((char *)gbitmap_get_data(world_bitmap))[byte] = ((char *)gbitmap_get_data(world_bitmap))[WIDTH*HEIGHT + byte];
-        }
+  int bytes_per_row = gbitmap_get_bytes_per_row(world_bitmap);
+  int byte = (y * bytes_per_row) + x; // 8-bit means 1 byte per pixel
+  
+  // Calculate dynamic frame offsets
+  int night_offset = HEIGHT * bytes_per_row;
+  int day_offset = 2 * HEIGHT * bytes_per_row;
+
+  if (all_night) { 
+    ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte];
+  } else { 
+    ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
+  }
 #endif
         if(x == LOCAL_X && y == LOCAL_Y){
           flip_color(all_night ? 1 : 0); 
@@ -161,12 +167,17 @@ static void draw_earth() {
           ((char *)gbitmap_get_data(image))[byte] = ((char *)gbitmap_get_data(image))[byte] & ~(0x1 << (7 - x % 8));
         }
 #else
-        // Apply Color logic (grabs the shadow pixel from the bottom half of the source image)
-        int byte = y * gbitmap_get_bytes_per_row(world_bitmap) + (int)(x / 2);
+        // Apply Color logic (1 byte per pixel)
+        int bytes_per_row = gbitmap_get_bytes_per_row(world_bitmap);
+        int byte = (y * bytes_per_row) + x;
+        
+        int night_offset = HEIGHT * bytes_per_row;
+        int day_offset = 2 * HEIGHT * bytes_per_row;
+
         if (angle < 0) { 
-          ((char *)gbitmap_get_data(world_bitmap))[byte] = ((char *)gbitmap_get_data(world_bitmap))[(int)(WIDTH*HEIGHT / 2) + byte];
+          ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte];
         } else { 
-          ((char *)gbitmap_get_data(world_bitmap))[byte] = ((char *)gbitmap_get_data(world_bitmap))[WIDTH*HEIGHT + byte];
+          ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
         }
 #endif
         
