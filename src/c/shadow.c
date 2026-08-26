@@ -116,18 +116,36 @@ static void draw_earth() {
           ((char *)gbitmap_get_data(image))[byte] &= ~(0x1 << (7 - x % 8));
         }
 #else
-  int bytes_per_row = gbitmap_get_bytes_per_row(world_bitmap);
-  int byte = (y * bytes_per_row) + x; // 8-bit means 1 byte per pixel
-  
-  // Calculate dynamic frame offsets
-  int night_offset = HEIGHT * bytes_per_row;
-  int day_offset = 2 * HEIGHT * bytes_per_row;
+        // Dynamic color logic to handle both 8-bit (Emery) and 4-bit (Basalt)
+        int bytes_per_row = gbitmap_get_bytes_per_row(world_bitmap);
+        int night_offset = HEIGHT * bytes_per_row;
+        int day_offset = 2 * HEIGHT * bytes_per_row;
 
-  if (all_night) { 
-    ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte];
-  } else { 
-    ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
-  }
+        if (bytes_per_row >= WIDTH) {
+          // --- 8-BIT COLOR (1 byte = 1 pixel) ---
+          int byte = (y * bytes_per_row) + x;
+          if (all_night) { 
+            ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte];
+          } else { 
+            ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
+          }
+        } else {
+          // --- 4-BIT COLOR (1 byte = 2 pixels) ---
+          int byte = (y * bytes_per_row) + (x / 2);
+          uint8_t current_byte = ((uint8_t *)gbitmap_get_data(world_bitmap))[byte];
+          
+          uint8_t source_byte = all_night 
+            ? ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte] 
+            : ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
+
+          // Safely apply the bit-mask without destroying the neighboring pixel
+          if (x % 2 == 0) {
+            current_byte = (current_byte & 0x0F) | (source_byte & 0xF0); // Left pixel
+          } else {
+            current_byte = (current_byte & 0xF0) | (source_byte & 0x0F); // Right pixel
+          }
+          ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = current_byte;
+        }
 #endif
         if(x == LOCAL_X && y == LOCAL_Y){
           flip_color(all_night ? 1 : 0); 
@@ -167,17 +185,35 @@ static void draw_earth() {
           ((char *)gbitmap_get_data(image))[byte] = ((char *)gbitmap_get_data(image))[byte] & ~(0x1 << (7 - x % 8));
         }
 #else
-        // Apply Color logic (1 byte per pixel)
+        // Dynamic color logic to handle both 8-bit (Emery) and 4-bit (Basalt)
         int bytes_per_row = gbitmap_get_bytes_per_row(world_bitmap);
-        int byte = (y * bytes_per_row) + x;
-        
         int night_offset = HEIGHT * bytes_per_row;
         int day_offset = 2 * HEIGHT * bytes_per_row;
 
-        if (angle < 0) { 
-          ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte];
-        } else { 
-          ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
+        if (bytes_per_row >= WIDTH) {
+          // --- 8-BIT COLOR (1 byte = 1 pixel) ---
+          int byte = (y * bytes_per_row) + x;
+          if (angle < 0) { 
+            ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte];
+          } else { 
+            ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
+          }
+        } else {
+          // --- 4-BIT COLOR (1 byte = 2 pixels) ---
+          int byte = (y * bytes_per_row) + (x / 2);
+          uint8_t current_byte = ((uint8_t *)gbitmap_get_data(world_bitmap))[byte];
+          
+          uint8_t source_byte = (angle < 0) 
+            ? ((uint8_t *)gbitmap_get_data(world_bitmap))[night_offset + byte] 
+            : ((uint8_t *)gbitmap_get_data(world_bitmap))[day_offset + byte];
+
+          // Safely apply the bit-mask without destroying the neighboring pixel
+          if (x % 2 == 0) {
+            current_byte = (current_byte & 0x0F) | (source_byte & 0xF0); // Left pixel
+          } else {
+            current_byte = (current_byte & 0xF0) | (source_byte & 0x0F); // Right pixel
+          }
+          ((uint8_t *)gbitmap_get_data(world_bitmap))[byte] = current_byte;
         }
 #endif
         
